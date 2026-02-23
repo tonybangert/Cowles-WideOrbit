@@ -1,0 +1,101 @@
+# WideOrbit WO Traffic — Expected Field Definitions
+# Update this file once you have the client's actual WO schema.
+# These are common WO Traffic fields; your installation may differ.
+
+orders:
+  description: "Ad buy contracts from agencies/advertisers"
+  fields:
+    - name: order_id
+      type: string
+      description: "Unique order identifier"
+    - name: advertiser_name
+      type: string
+      description: "Advertiser or agency name"
+    - name: agency_name
+      type: string
+      nullable: true
+      description: "Buying agency"
+    - name: order_date
+      type: date
+      description: "Date order was placed"
+    - name: start_date
+      type: date
+      description: "Flight start date"
+    - name: end_date
+      type: date
+      description: "Flight end date"
+    - name: order_total
+      type: decimal
+      description: "Total order value"
+    - name: station
+      type: string
+      description: "Station call letters"
+
+spots:
+  description: "Individual scheduled commercial placements"
+  fields:
+    - name: spot_id
+      type: string
+      description: "Unique spot identifier"
+    - name: order_id
+      type: string
+      description: "Parent order reference"
+    - name: air_date
+      type: date
+      description: "Scheduled air date"
+    - name: air_time
+      type: time
+      description: "Scheduled air time"
+    - name: daypart
+      type: string
+      description: "Daypart code"
+    - name: program
+      type: string
+      nullable: true
+      description: "Program name"
+    - name: length
+      type: integer
+      description: "Spot length in seconds (15, 30, 60)"
+    - name: rate
+      type: decimal
+      description: "Spot rate (price)"
+    - name: status
+      type: string
+      description: "aired, preempted, makegood, scheduled"
+    - name: station
+      type: string
+      description: "Station call letters"
+
+inventory:
+  description: "Available ad slots by daypart and station"
+  fields:
+    - name: date
+      type: date
+      description: "Inventory date"
+    - name: daypart
+      type: string
+      description: "Daypart code"
+    - name: station
+      type: string
+      description: "Station call letters"
+    - name: total_avails
+      type: integer
+      description: "Total available spots"
+    - name: booked
+      type: integer
+      description: "Number of spots booked"
+    - name: remaining
+      type: integer
+      description: "Remaining available spots"
+
+daypart_mapping:
+  description: "Standard broadcast daypart definitions"
+  codes:
+    EM: { name: "Early Morning", start: "06:00", end: "09:00" }
+    DT: { name: "Daytime", start: "09:00", end: "16:00" }
+    EF: { name: "Early Fringe", start: "16:00", end: "17:00" }
+    EN: { name: "Early News", start: "17:00", end: "18:30" }
+    PA: { name: "Prime Access", start: "18:30", end: "20:00" }
+    PR: { name: "Prime", start: "20:00", end: "23:00" }
+    LN: { name: "Late News", start: "23:00", end: "23:35" }
+    LF: { name: "Late Fringe", start: "23:35", end: "02:00" }

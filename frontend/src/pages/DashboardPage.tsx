@@ -16,6 +16,25 @@ interface Alert {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/**
+ * Try the live API first; if it fails (e.g. no backend on Vercel),
+ * fall back to pre-generated static JSON in /static-data/.
+ */
+async function fetchEndpoint(endpoint: string, station: string): Promise<any> {
+  const qs = station ? `?station=${encodeURIComponent(station)}` : '';
+  const apiUrl = `${API}/api/data/${endpoint}${qs}`;
+
+  try {
+    const res = await fetch(apiUrl);
+    if (res.ok) return res.json();
+  } catch { /* API unavailable — fall through to static */ }
+
+  const suffix = station ? `--${station}` : '';
+  const staticUrl = `/static-data/${endpoint}${suffix}.json`;
+  const res = await fetch(staticUrl);
+  return res.json();
+}
+
 export default function DashboardPage() {
   const [stations, setStations] = useState<string[]>([]);
   const [selectedStation, setSelectedStation] = useState('');
@@ -31,8 +50,7 @@ export default function DashboardPage() {
 
   // Load station list once
   useEffect(() => {
-    fetch(`${API}/api/data/stations`)
-      .then(r => r.json())
+    fetchEndpoint('stations', '')
       .then(d => setStations(d.stations))
       .catch(console.error);
   }, []);
@@ -40,14 +58,13 @@ export default function DashboardPage() {
   // Fetch all panels when station changes
   const fetchData = useCallback(() => {
     setLoading(true);
-    const qs = selectedStation ? `?station=${encodeURIComponent(selectedStation)}` : '';
 
     Promise.all([
-      fetch(`${API}/api/data/revenue-by-daypart${qs}`).then(r => r.json()),
-      fetch(`${API}/api/data/aur-trends${qs}`).then(r => r.json()),
-      fetch(`${API}/api/data/top-advertisers${qs}`).then(r => r.json()),
-      fetch(`${API}/api/data/sellout-rates${qs}`).then(r => r.json()),
-      fetch(`${API}/api/data/makegood-summary${qs}`).then(r => r.json()),
+      fetchEndpoint('revenue-by-daypart', selectedStation),
+      fetchEndpoint('aur-trends', selectedStation),
+      fetchEndpoint('top-advertisers', selectedStation),
+      fetchEndpoint('sellout-rates', selectedStation),
+      fetchEndpoint('makegood-summary', selectedStation),
     ])
       .then(([rev, aur, adv, sell, mg]) => {
         setRevenueData(rev);

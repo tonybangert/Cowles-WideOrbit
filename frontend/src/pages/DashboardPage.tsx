@@ -26,8 +26,11 @@ async function fetchEndpoint(endpoint: string, station: string): Promise<any> {
 
   try {
     const res = await fetch(apiUrl);
-    if (res.ok) return res.json();
-  } catch { /* API unavailable — fall through to static */ }
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    }
+  } catch { /* API unavailable or bad JSON — fall through to static */ }
 
   const suffix = station ? `--${station}` : '';
   const staticUrl = `/static-data/${endpoint}${suffix}.json`;

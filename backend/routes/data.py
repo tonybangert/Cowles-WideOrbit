@@ -28,9 +28,26 @@ def _get_loader() -> DataLoader:
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+import pandas as pd
+
 CY_YEAR = 2025
 PY_YEAR = 2024
 REVENUE_STATUSES = ["aired", "makegood"]
+
+
+def _ytd_cutoff(spots: pd.DataFrame) -> int:
+    """Return the latest day-of-year with aired/makegood data in CY.
+
+    Used to clip PY to the same calendar window so YoY comparisons
+    are apples-to-apples (e.g. Jan 1–Feb 15 vs Jan 1–Feb 15).
+    """
+    cy_aired = spots[
+        (spots["air_date"].dt.year == CY_YEAR)
+        & spots["status"].isin(REVENUE_STATUSES)
+    ]
+    if cy_aired.empty:
+        return 366  # no CY data → don't clip PY
+    return int(cy_aired["air_date"].dt.dayofyear.max())
 
 
 # ── GET /stations ────────────────────────────────────────────────────────────
@@ -52,9 +69,12 @@ async def revenue_by_daypart(station: str | None = Query(default=None)):
     if station:
         rev = rev[rev["station"] == station]
 
+    # YTD comparison: clip PY to same calendar window as CY
+    cutoff_doy = _ytd_cutoff(spots)
     rev["year"] = rev["air_date"].dt.year
-    cy = rev[rev["year"] == CY_YEAR]
-    py = rev[rev["year"] == PY_YEAR]
+    rev["doy"] = rev["air_date"].dt.dayofyear
+    cy = rev[(rev["year"] == CY_YEAR) & (rev["doy"] <= cutoff_doy)]
+    py = rev[(rev["year"] == PY_YEAR) & (rev["doy"] <= cutoff_doy)]
 
     cy_by_dp = cy.groupby("daypart")["rate"].sum()
     py_by_dp = py.groupby("daypart")["rate"].sum()
@@ -182,9 +202,12 @@ async def sellout_rates(station: str | None = Query(default=None)):
     if station:
         inv = inv[inv["station"] == station]
 
+    # YTD comparison: clip PY to same calendar window as CY
+    cutoff_doy = _ytd_cutoff(loader.spots)
     inv["year"] = inv["date"].dt.year
-    cy = inv[inv["year"] == CY_YEAR]
-    py = inv[inv["year"] == PY_YEAR]
+    inv["doy"] = inv["date"].dt.dayofyear
+    cy = inv[(inv["year"] == CY_YEAR) & (inv["doy"] <= cutoff_doy)]
+    py = inv[(inv["year"] == PY_YEAR) & (inv["doy"] <= cutoff_doy)]
 
     cy_by_dp = cy.groupby("daypart").agg(booked=("booked", "sum"), avails=("total_avails", "sum"))
     py_by_dp = py.groupby("daypart").agg(booked=("booked", "sum"), avails=("total_avails", "sum"))

@@ -31,11 +31,11 @@ logger = logging.getLogger("sample_data_gen")
 # ── Station Configuration ────────────────────────────────────────────────────
 
 STATIONS = {
-    "KIRO-TV": {"market": "Seattle",  "dma_rank": 12,  "size": 1.00},
-    "KREM-TV": {"market": "Spokane",  "dma_rank": 72,  "size": 0.25},
-    "KXLY-TV": {"market": "Spokane",  "dma_rank": 72,  "size": 0.22},
-    "KHQ-TV":  {"market": "Spokane",  "dma_rank": 72,  "size": 0.18},
-    "KAPP-TV": {"market": "Yakima",   "dma_rank": 125, "size": 0.12},
+    "KHQ-TV":  {"market": "Spokane",  "dma_rank": 72,  "size": 0.35},
+    "KULR-TV": {"market": "Billings", "dma_rank": 170, "size": 0.22},
+    "KTMF-TV": {"market": "Missoula", "dma_rank": 166, "size": 0.18},
+    "KNDO-TV": {"market": "Yakima",   "dma_rank": 125, "size": 0.15},
+    "KWYB-TV": {"market": "Butte",    "dma_rank": 190, "size": 0.10},
 }
 
 # ── Daypart Configuration ────────────────────────────────────────────────────
@@ -73,11 +73,11 @@ YOY_GROWTH = {
 # ── Prime AUR Ranges by Station ──────────────────────────────────────────────
 
 PRIME_AUR_RANGES = {
-    "KIRO-TV": (800, 2500),
-    "KREM-TV": (400, 1200),
-    "KXLY-TV": (350, 1100),
-    "KHQ-TV":  (300, 900),
-    "KAPP-TV": (250, 700),
+    "KHQ-TV":  (400, 1200),
+    "KULR-TV": (300, 900),
+    "KTMF-TV": (250, 800),
+    "KNDO-TV": (200, 700),
+    "KWYB-TV": (150, 500),
 }
 
 # ── Time Range ────────────────────────────────────────────────────────────────
@@ -370,7 +370,7 @@ def generate_spots(
     adv_weights = {a["name"]: a["share"] for a in advertisers}
 
     # Station with notably worse preemption (for spec testing)
-    high_preempt_station = "KIRO-TV"
+    high_preempt_station = "KHQ-TV"
 
     for _, order in orders_df.iterrows():
         start = date.fromisoformat(order["start_date"])
